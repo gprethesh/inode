@@ -1,0 +1,37 @@
+[
+  {
+    "wallet_address": "wallet1",
+    "vote": 1,
+    "name": "Validator 1",
+    "status": "active",
+    "totalStake": 50000
+  },
+  {
+    "wallet_address": "wallet2",
+    "vote": 10,
+    "name": "Validator 2",
+    "status": "active",
+    "totalStake": 10000
+  },
+  {
+    "wallet_address": "wallet3",
+    "vote": 2,
+    "name": "Validator 3",
+    "status": "active",
+    "totalStake": 10000
+  },
+  {
+    "wallet_address": "wallet4",
+    "vote": 5,
+    "name": "Validator 3",
+    "status": "active",
+    "totalStake": 20000
+  },
+  {
+    "wallet_address": "wallet5",
+    "vote": 10,
+    "name": "Validator 3",
+    "status": "active",
+    "totalStake": 100000
+  }
+]
