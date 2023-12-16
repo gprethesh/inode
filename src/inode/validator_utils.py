@@ -4,7 +4,6 @@ import threading
 import time
 import redis
 from datetime import datetime
-import asyncio
 import random
 import config
 
@@ -13,9 +12,32 @@ import config
 r = redis.Redis(host="localhost", port=6379, db=0)
 
 # Constants for API and Timing
-API_URL = "http://127.0.0.1:5500/src/inode/val.json"  # Replace with actual API endpoint
+API_URL = "http://127.0.0.1:5501/src/inode/val.json"  # Replace with actual API endpoint
 UPDATE_INTERVAL_VALIDATORS = 86400  # 24 hours in seconds
 UPDATE_INTERVAL_BALANCE = 60  # 60 seconds
+
+
+def get_percentage(wallet_address):
+    try:
+        # Fetch details for the specific wallet address
+        details = r.hget("validators_list", wallet_address)
+
+        if details is None:
+            return "Wallet address not found in validators list."
+
+        # Decode and load details
+        details = json.loads(details.decode("utf-8"))
+
+        # Fetch and return the "percentage" field
+        return details.get("percentage", "Percentage field not found.")
+
+    except redis.RedisError as e:
+        # Handle Redis-specific errors
+        return f"Redis error: {e}"
+
+    except Exception as e:
+        # Handle other possible errors
+        return f"Error: {e}"
 
 
 # Function to fetch validators from the API
@@ -23,7 +45,7 @@ def fetch_validators(validators):
     try:
         response = requests.get(validators)
         response.raise_for_status()  # This will raise an exception for HTTP errors
-        print("Validators Found", response.json())
+
         return response.json()
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
@@ -38,11 +60,13 @@ def fetch_validators(validators):
 
 def update_validators_list():
     try:
-        print("inside update_validators_list")
         validator_data = fetch_validators(config.VALIDATORS)
+        total_stake_all_validators = sum(
+            validator.get("totalStake", 0) for validator in validator_data[:60]
+        )
         for validator in validator_data[:60]:  # Limit to top 60 validators
             wallet_address = validator.get("wallet_address")
-            vote = validator.get("vote")
+            vote = validator.get("vote", {}).get(config.INODE, 0)
             totalStake = validator.get("totalStake")
 
             # Initialize or update validator details
@@ -53,13 +77,20 @@ def update_validators_list():
                 details = {
                     "balance": 0,
                     "score": 0,
-                    "last_active_time": 0,
+                    "ping": 0,
+                    "ip": 0,
+                    "port": 0,
                     "vote": vote,
                     "totalStake": totalStake,
                 }
 
             details["vote"] = vote
             details["totalStake"] = totalStake
+            if total_stake_all_validators > 0:  # Prevent division by zero
+                percentage_stake = round(
+                    (totalStake / total_stake_all_validators) * 100, 2
+                )
+                details["percentage"] = percentage_stake
             r.hset("validators_list", wallet_address, json.dumps(details))
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -69,7 +100,6 @@ def fetch_miners(miners):
     try:
         response = requests.get(miners)
         if response.status_code == 200:
-            print("Miners Found", response.json())
             return response.json()
         else:
             print("Failed to fetch Miners")
@@ -81,7 +111,6 @@ def fetch_miners(miners):
 
 def update_miners_list():
     try:
-        print("inside update_miners_list")
         miners_data = fetch_miners(config.MINERS)
 
         # Get the list of current top 12 miners' wallet addresses
@@ -110,6 +139,32 @@ def update_miners_list():
         print(f"Redis operation error: {e}")
     except Exception as e:
         print(f"Unexpected error: {e}")
+
+
+def passive_miner_list():
+    try:
+        # Fetching current miners from miners_list
+        current_miners = r.lrange("miners_list", 0, -1)  # Fetching all miners
+
+        for miner_data in current_miners:
+            miner = json.loads(miner_data)
+
+            # Extracting the wallet address
+            wallet_address = miner.get("wallet_address")
+
+            # Adding new details
+            details = {
+                "balance": 0,
+                "score": 0,
+                "last_active_time": 0,
+            }
+
+            # Store in passive_miners database
+            r.hset("passive_miners", wallet_address, json.dumps(details))
+
+        print("Passive miners list updated")
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 
 def last_update():
@@ -155,7 +210,6 @@ def last_update():
 
 # Function to update the balance of validators
 def update_balance(total_tokens):
-    print("Inside Balance updated")
     all_validators = r.hgetall("validators_list")
 
     # Calculate the effective stake for eligible validators and the total effective stake
@@ -174,7 +228,6 @@ def update_balance(total_tokens):
             effective_stakes[wallet_address] = effective_stake
             total_effective_stake += effective_stake
 
-    print("all_validators", all_validators)
     print("total_effective_stake", total_effective_stake)
 
     # Distribute rewards based on effective stake
@@ -212,21 +265,30 @@ def update_validators_periodically():
 
 def create_job():
     try:
-        # Generate a 7-digit random ID
+        # Existing code for random_id and job_name
         random_id = random.randint(1000000, 9999999)
         job_name = f"jobInode{random_id}"
 
-        # Sample wallet address and status
-        wallet_address = (
-            None  # You can replace this with actual wallet address generation logic
-        )
-        status = "pending"
+        # List of URLs
+        urls = [
+            "https://raw.githubusercontent.com/gprethesh/0/main/3/hash/hashes.csv",
+            "https://raw.githubusercontent.com/gprethesh/0/main/3/hash/hashes.csv",
+            "https://raw.githubusercontent.com/gprethesh/0/main/3/hash/hashes.csv",
+        ]
 
-        # Job details as a dictionary
+        # Randomly select one of the URLs
+        selected_url = random.choice(urls)
+
+        # Sample wallet address and status
+        wallet_address = None  # Placeholder for wallet address logic
+
+        # Job details as a dictionary, including the selected hash
+        print("Job details as a dictionary")
         job_details = {
             "jobname": job_name,
             "wallet_address": wallet_address,
-            "status": status,
+            "status": "pending",
+            "hash": selected_url,  # Add the selected hash here
         }
 
         # Serialize job details to JSON and add to the 'jobInode' list in Redis
@@ -239,6 +301,8 @@ def create_job():
         print(f"Redis error occurred: {e}")
     except json.JSONDecodeError as e:
         print(f"JSON serialization error: {e}")
+    except requests.HTTPError as e:
+        print(f"HTTP request error: {e}")
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
 

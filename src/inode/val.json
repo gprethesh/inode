@@ -1,35 +1,100 @@
 [
   {
-    "wallet_address": "wallet1",
-    "vote": 1,
+    "wallet_address": "04c590a6b268f13a042e1b0f9c52f291db78f042659ad257a39fead537452b6657d161b988cd5b90b29c16192ecc139ff48b181c7b99555514d6ec375308c19bbd",
+    "vote": {
+      "inode1": 10,
+      "inode2": 0,
+      "inode3": 0,
+      "inode4": 0,
+      "inode5": 0,
+      "inode6": 0,
+      "inode7": 0,
+      "inode8": 0,
+      "inode9": 0,
+      "inode10": 0,
+      "inode11": 0,
+      "inode12": 0
+    },
     "name": "Validator 1",
     "status": "active",
-    "totalStake": 50000
+    "totalStake": 5000
   },
   {
     "wallet_address": "wallet2",
-    "vote": 10,
+    "vote": {
+      "inode1": 1,
+      "inode2": 0,
+      "inode3": 0,
+      "inode4": 0,
+      "inode5": 0,
+      "inode6": 0,
+      "inode7": 0,
+      "inode8": 0,
+      "inode9": 0,
+      "inode10": 0,
+      "inode11": 0,
+      "inode12": 0
+    },
     "name": "Validator 2",
     "status": "active",
     "totalStake": 10000
   },
   {
     "wallet_address": "wallet3",
-    "vote": 2,
+    "vote": {
+      "inode1": 2,
+      "inode2": 0,
+      "inode3": 0,
+      "inode4": 0,
+      "inode5": 0,
+      "inode6": 0,
+      "inode7": 0,
+      "inode8": 0,
+      "inode9": 0,
+      "inode10": 0,
+      "inode11": 0,
+      "inode12": 0
+    },
     "name": "Validator 3",
     "status": "active",
     "totalStake": 10000
   },
   {
     "wallet_address": "wallet4",
-    "vote": 5,
+    "vote": {
+      "inode1": 5,
+      "inode2": 0,
+      "inode3": 0,
+      "inode4": 0,
+      "inode5": 0,
+      "inode6": 0,
+      "inode7": 0,
+      "inode8": 0,
+      "inode9": 0,
+      "inode10": 0,
+      "inode11": 0,
+      "inode12": 0
+    },
     "name": "Validator 3",
     "status": "active",
     "totalStake": 20000
   },
   {
     "wallet_address": "wallet5",
-    "vote": 10,
+    "vote": {
+      "inode1": 10,
+      "inode2": 0,
+      "inode3": 0,
+      "inode4": 0,
+      "inode5": 0,
+      "inode6": 0,
+      "inode7": 0,
+      "inode8": 0,
+      "inode9": 0,
+      "inode10": 0,
+      "inode11": 0,
+      "inode12": 0
+    },
     "name": "Validator 3",
     "status": "active",
     "totalStake": 100000
